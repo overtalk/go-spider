@@ -1,4 +1,4 @@
-package main
+package movie
 
 import (
 	"log"
@@ -10,6 +10,7 @@ import (
 )
 
 type DouBanMovie struct {
+	Rank     int
 	Href     string
 	Name     string
 	Start    float64
@@ -39,7 +40,7 @@ func main() {
 		log.Println("Something went wrong:", err)
 	})
 
-	c.OnHTML(".info", func(e *colly.HTMLElement) {
+	c.OnHTML(".item", func(e *colly.HTMLElement) {
 		m := getDetail(e)
 		log.Printf("%+v", m)
 	})
@@ -55,6 +56,8 @@ func main() {
 func getDetail(e *colly.HTMLElement) *DouBanMovie {
 	goQuerySelection := e.DOM
 
+	rank, _ := strconv.Atoi(goQuerySelection.Find("em").Text())
+
 	star, _ := strconv.ParseFloat(goQuerySelection.Find(".rating_num").Text(), 64)
 
 	detail := strings.TrimSpace(goQuerySelection.Find(".bd").Find("p").Eq(0).Text())
@@ -67,6 +70,7 @@ func getDetail(e *colly.HTMLElement) *DouBanMovie {
 	year, region, category := getCategoryAndYear(strings.TrimSpace(temp[1]))
 
 	return &DouBanMovie{
+		Rank:     rank,
 		Href:     e.ChildAttr(".hd a", "href"),
 		Name:     e.DOM.Find("span.title").Eq(0).Text(),
 		Start:    star,
